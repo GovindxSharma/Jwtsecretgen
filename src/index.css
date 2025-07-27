@@ -1,0 +1,15 @@
+@import "tailwindcss";
+html,
+body {
+  @apply bg-gradient-to-br from-zinc-900 via-zinc-950 to-black text-white;
+  height: 100%;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  font-family: 'Inter', sans-serif;
+}
+
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
