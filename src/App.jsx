@@ -13,7 +13,7 @@ export default function App() {
       <footer className="text-center text-sm text-gray-500 mt-10 mb-6 px-4">
         Made with ❤️ by <span className="text-indigo-400 font-medium">Govind Sharma</span> |
         <a
-          href="https://github.com/govind-sharma-2839"
+          href="https://github.com/GovindxSharma"
           target="_blank"
           className="underline ml-1 hover:text-white transition"
         >
