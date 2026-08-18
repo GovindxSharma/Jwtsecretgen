@@ -6,42 +6,40 @@ import {
   Eye,
   EyeOff,
   Download,
-  Terminal,
-  ShieldCheck,
   Zap,
   Sliders,
   CheckCircle2,
   FileCode,
   Sparkles,
-  ArrowRight
+  Key
 } from "lucide-react";
 
 const PRESETS = [
-  { bits: 256, bytes: 32, label: "HS256", desc: "Standard HMAC-SHA256 (32 Bytes)", tag: "Standard" },
-  { bits: 384, bytes: 48, label: "HS384", desc: "Stronger HMAC-SHA384 (48 Bytes)", tag: "High" },
-  { bits: 512, bytes: 64, label: "HS512", desc: "Recommended HMAC-SHA512 (64 Bytes)", tag: "Recommended", isBest: true },
-  { bits: 1024, bytes: 128, label: "1024-bit", desc: "Ultra Heavy Duty (128 Bytes)", tag: "Ultra" },
+  { bits: 256, bytes: 32, label: "HS256", desc: "32 Bytes • 256-bit", tag: "Standard" },
+  { bits: 384, bytes: 48, label: "HS384", desc: "48 Bytes • 384-bit", tag: "High" },
+  { bits: 512, bytes: 64, label: "HS512", desc: "64 Bytes • 512-bit", tag: "Recommended", isBest: true },
+  { bits: 1024, bytes: 128, label: "1024-bit", desc: "128 Bytes • 1024-bit", tag: "Ultra" },
 ];
 
 const FORMATS = [
-  { id: "hex", name: "Hexadecimal", hint: "Best for Node.js / Crypto" },
-  { id: "base64", name: "Base64", hint: "Standard for Web & APIs" },
-  { id: "base64url", name: "Base64URL", hint: "URL & Header safe" },
-  { id: "alphanumeric", name: "Alphanumeric", hint: "A-Z, a-z, 0-9 plain" },
+  { id: "hex", name: "Hex", hint: "Node.js / Crypto" },
+  { id: "base64", name: "Base64", hint: "Web APIs / Auth.js" },
+  { id: "base64url", name: "Base64URL", hint: "URL Safe" },
+  { id: "alphanumeric", name: "Alphanumeric", hint: "Letters + Numbers" },
 ];
 
 export default function Generator({ showToast }) {
   const [selectedBits, setSelectedBits] = useState(512);
   const [format, setFormat] = useState("hex");
-  const [hexCase, setHexCase] = useState("lower"); // 'lower' or 'upper'
+  const [hexCase, setHexCase] = useState("lower");
   const [rawBytes, setRawBytes] = useState(null);
   const [secret, setSecret] = useState("");
   const [isMasked, setIsMasked] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [copiedType, setCopiedType] = useState(null); // 'secret', 'env', 'code'
+  const [copiedType, setCopiedType] = useState(null);
   const [activeCodeTab, setActiveCodeTab] = useState("node");
 
-  // Core cryptographic generator
+  // Generate cryptographically random bytes
   const generateNewSecret = useCallback(() => {
     setIsGenerating(true);
     const bytesCount = selectedBits / 8;
@@ -54,7 +52,7 @@ export default function Generator({ showToast }) {
     }, 150);
   }, [selectedBits]);
 
-  // Compute formatted string from raw bytes
+  // Format bytes into string
   useEffect(() => {
     if (!rawBytes) return;
 
@@ -89,15 +87,14 @@ export default function Generator({ showToast }) {
     setSecret(result);
   }, [rawBytes, format, hexCase]);
 
-  // Generate on initial mount
+  // Initialize on mount
   useEffect(() => {
     generateNewSecret();
   }, [generateNewSecret]);
 
-  // Global keyboard shortcut: Press Space or G to generate
+  // Keyboard shortcut listener
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Don't trigger if user is focused on an input or textarea
       if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) {
         return;
       }
@@ -136,31 +133,29 @@ export default function Generator({ showToast }) {
     if (showToast) showToast(".env file downloaded!", "success");
   };
 
-  // Code snippets generator
   const codeSnippets = {
     node: `// 1. Install jsonwebtoken: npm install jsonwebtoken
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || '${secret}';
 
-// Sign a new token
+// Sign token
 const token = jwt.sign(
   { userId: '12345', role: 'admin' },
   JWT_SECRET,
   { expiresIn: '24h', algorithm: '${selectedBits === 512 ? "HS512" : selectedBits === 384 ? "HS384" : "HS256"}' }
 );
 
-// Verify incoming token
+// Verify token
 const decoded = jwt.verify(token, JWT_SECRET);`,
-    nextjs: `// In your .env.local file:
+    nextjs: `// In .env.local:
 // JWT_SECRET="${secret}"
 
-// In /app/api/auth/route.ts or NextAuth config:
+// In your auth handler:
 import { SignJWT, jwtVerify } from 'jose';
 
 const secretKey = new TextEncoder().encode(process.env.JWT_SECRET);
 
-// Create token
 export async function createToken(payload: { userId: string }) {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: '${selectedBits === 512 ? "HS512" : selectedBits === 384 ? "HS384" : "HS256"}' })
@@ -175,11 +170,8 @@ from datetime import datetime, timedelta
 
 JWT_SECRET = os.getenv('JWT_SECRET', '${secret}')
 
-# Create token
-payload = {
-    'user_id': 12345,
-    'exp': datetime.utcnow() + timedelta(hours=24)
-}
+# Sign token
+payload = {'user_id': 12345, 'exp': datetime.utcnow() + timedelta(hours=24)}
 token = jwt.encode(payload, JWT_SECRET, algorithm='${selectedBits === 512 ? "HS512" : selectedBits === 384 ? "HS384" : "HS256"}')
 
 # Verify token
@@ -187,7 +179,6 @@ decoded = jwt.decode(token, JWT_SECRET, algorithms=['${selectedBits === 512 ? "H
     golang: `package main
 
 import (
-	"fmt"
 	"time"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -207,27 +198,27 @@ func createToken(userID string) (string, error) {
   return (
     <div className="space-y-6">
       
-      {/* Hero Intro */}
-      <div className="text-center space-y-2 pt-2 pb-1">
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-          Generate Strong <span className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">JWT Secrets</span>
+      {/* Title & Description */}
+      <div className="text-center space-y-2 pt-1 pb-1">
+        <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
+          Generate Strong <span className="text-indigo-600 dark:text-indigo-400">JWT Secrets</span>
         </h1>
-        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
-          Create unpredictable, cryptographically random keys for signing JWT tokens and securing your backend APIs.
+        <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto leading-relaxed">
+          Create unpredictable, cryptographically random secret keys for signing JSON Web Tokens and securing your APIs.
         </p>
       </div>
 
       {/* Main Generator Card */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 p-5 sm:p-7">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xs p-5 sm:p-7 transition-colors duration-200">
         
         {/* Step 1: Preset Key Length */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-indigo-500" />
-              1. Choose Security Level / Key Size
+          <div className="flex items-center justify-between mb-2.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              1. Key Length & Algorithm
             </label>
-            <span className="text-xs text-slate-400 dark:text-slate-500">
+            <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
               {selectedBits / 8} Bytes / {selectedBits} Bits
             </span>
           </div>
@@ -239,23 +230,23 @@ func createToken(userID string) (string, error) {
                 <button
                   key={preset.bits}
                   onClick={() => setSelectedBits(preset.bits)}
-                  className={`relative p-3 rounded-xl border text-left transition-all duration-150 flex flex-col justify-between ${
+                  className={`p-3 rounded-xl border text-left transition duration-150 flex flex-col justify-between ${
                     active
-                      ? "border-indigo-600 bg-indigo-50/70 dark:bg-indigo-950/40 dark:border-indigo-500 ring-2 ring-indigo-500/20"
-                      : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-100/50 dark:hover:bg-slate-800"
+                      ? "border-indigo-600 bg-indigo-50/80 dark:bg-indigo-950/40 dark:border-indigo-500 ring-2 ring-indigo-500/20"
+                      : "border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-850 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-100/60 dark:hover:bg-zinc-800"
                   }`}
                 >
                   <div className="flex items-center justify-between w-full mb-1">
-                    <span className={`text-sm font-bold ${active ? "text-indigo-900 dark:text-indigo-200" : "text-slate-800 dark:text-slate-200"}`}>
+                    <span className={`text-sm font-bold ${active ? "text-indigo-950 dark:text-indigo-200" : "text-zinc-900 dark:text-zinc-100"}`}>
                       {preset.label}
                     </span>
                     {preset.isBest && (
-                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                         Best
                       </span>
                     )}
                   </div>
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
+                  <span className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-1">
                     {preset.desc}
                   </span>
                 </button>
@@ -266,17 +257,17 @@ func createToken(userID string) (string, error) {
 
         {/* Step 2: Output Format */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-              <Sliders className="w-3.5 h-3.5 text-indigo-500" />
+          <div className="flex items-center justify-between mb-2.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+              <Sliders className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               2. Encoding Format
             </label>
             {format === "hex" && (
               <button
                 onClick={() => setHexCase(hexCase === "lower" ? "upper" : "lower")}
-                className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
               >
-                Case: {hexCase === "lower" ? "lowercase (default)" : "UPPERCASE"}
+                Case: {hexCase === "lower" ? "lowercase" : "UPPERCASE"}
               </button>
             )}
           </div>
@@ -290,8 +281,8 @@ func createToken(userID string) (string, error) {
                   onClick={() => setFormat(fmt.id)}
                   className={`px-3 py-2 rounded-xl border text-xs font-medium transition text-left ${
                     active
-                      ? "border-indigo-600 bg-indigo-600 text-white font-semibold shadow-sm"
-                      : "border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-850 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      ? "border-indigo-600 bg-indigo-600 text-white font-semibold shadow-xs"
+                      : "border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-850 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                   }`}
                 >
                   <div className="font-semibold">{fmt.name}</div>
@@ -305,29 +296,27 @@ func createToken(userID string) (string, error) {
         </div>
 
         {/* Generated Secret Display Box */}
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              Your Generated Secret Key
+            <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+              <Key className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              Generated Secret Key
             </label>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsMasked(!isMasked)}
-                className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                title={isMasked ? "Reveal secret" : "Mask secret (for privacy)"}
-              >
-                {isMasked ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                <span>{isMasked ? "Show" : "Mask"}</span>
-              </button>
-            </div>
+            <button
+              onClick={() => setIsMasked(!isMasked)}
+              className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+              title={isMasked ? "Reveal secret" : "Mask secret (for privacy)"}
+            >
+              {isMasked ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              <span>{isMasked ? "Show" : "Mask"}</span>
+            </button>
           </div>
 
-          <div className="relative group">
-            <div className="w-full bg-slate-900 text-slate-100 rounded-xl p-4 sm:p-5 font-mono text-xs sm:text-sm break-all leading-relaxed shadow-inner border border-slate-800 min-h-[96px] flex items-center">
+          <div className="relative">
+            <div className="w-full bg-zinc-950 text-zinc-100 rounded-xl p-4 sm:p-5 font-mono text-xs sm:text-sm break-all leading-relaxed shadow-inner border border-zinc-800 min-h-[96px] flex items-center pr-24">
               {isMasked ? (
-                <span className="tracking-widest text-slate-500 select-none">
+                <span className="tracking-widest text-zinc-500 select-none">
                   {"•".repeat(Math.min(secret.length, 64))}
                 </span>
               ) : (
@@ -337,11 +326,11 @@ func createToken(userID string) (string, error) {
               )}
             </div>
 
-            {/* Floating Fast Copy Button */}
+            {/* Fast Copy Button */}
             <div className="absolute right-3 top-3">
               <button
-                onClick={() => copyToClipboard(secret, "secret", "Secret key copied to clipboard!")}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium shadow-sm transition backdrop-blur-sm"
+                onClick={() => copyToClipboard(secret, "secret", "Secret copied to clipboard!")}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-medium shadow-xs transition"
               >
                 {copiedType === "secret" ? (
                   <>
@@ -359,30 +348,30 @@ func createToken(userID string) (string, error) {
           </div>
 
           {/* Quick Metrics Bar */}
-          <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1 pt-1 gap-2">
+          <div className="flex flex-wrap items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 px-1 pt-1 gap-2">
             <div className="flex items-center gap-3">
-              <span>Length: <strong className="text-slate-700 dark:text-slate-300 font-mono">{secret.length}</strong> chars</span>
+              <span>Length: <strong className="text-zinc-800 dark:text-zinc-200 font-mono">{secret.length}</strong> chars</span>
               <span>•</span>
-              <span>Entropy: <strong className="text-slate-700 dark:text-slate-300 font-mono">{selectedBits}</strong> bits</span>
+              <span>Entropy: <strong className="text-zinc-800 dark:text-zinc-200 font-mono">{selectedBits}</strong> bits</span>
               <span>•</span>
               <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-                <CheckCircle2 className="w-3 h-3" /> CSPRNG Ready
+                <CheckCircle2 className="w-3 h-3" /> CSPRNG
               </span>
             </div>
-            <span className="text-[11px] text-slate-400 dark:text-slate-500 hidden sm:inline">
-              Tip: Press <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded font-mono text-[10px]">G</kbd> to re-generate
+            <span className="text-[11px] text-zinc-400 dark:text-zinc-500 hidden sm:inline">
+              Press <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded font-mono text-[10px]">G</kbd> to regenerate
             </span>
           </div>
         </div>
 
         {/* Action Buttons Toolbar */}
-        <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+        <div className="mt-6 pt-5 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3">
           
           {/* Main Generate Button */}
           <button
             onClick={generateNewSecret}
             disabled={isGenerating}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-md shadow-indigo-600/20 hover:shadow-lg hover:shadow-indigo-600/30 transition-all active:scale-[0.98]"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white font-semibold text-sm shadow-xs transition active:scale-[0.99]"
           >
             <RefreshCw className={`w-4 h-4 ${isGenerating ? "animate-spin" : ""}`} />
             <span>Generate New Secret</span>
@@ -393,18 +382,18 @@ func createToken(userID string) (string, error) {
             
             {/* Copy .env line */}
             <button
-              onClick={() => copyToClipboard(`JWT_SECRET="${secret}"`, "env", 'Copied .env format: JWT_SECRET="..."')}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-750 text-xs font-medium transition"
+              onClick={() => copyToClipboard(`JWT_SECRET="${secret}"`, "env", 'Copied: JWT_SECRET="..."')}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs font-medium transition"
               title="Copy formatted for .env file"
             >
               {copiedType === "env" ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Copied .env!</span>
                 </>
               ) : (
                 <>
-                  <Copy className="w-3.5 h-3.5 text-slate-500" />
+                  <Copy className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
                   <span>Copy .env Line</span>
                 </>
               )}
@@ -413,10 +402,10 @@ func createToken(userID string) (string, error) {
             {/* Download .env file */}
             <button
               onClick={downloadEnvFile}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-750 text-xs font-medium transition"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs font-medium transition"
               title="Download as .env file"
             >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <Download className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
               <span>Download .env</span>
             </button>
 
@@ -426,34 +415,34 @@ func createToken(userID string) (string, error) {
 
       </div>
 
-      {/* Code Snippets Section (Expandable/Tabbed) */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-sm p-5 sm:p-6 transition-colors duration-200">
+      {/* Code Snippets Section */}
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xs p-5 sm:p-6 transition-colors duration-200">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
-              <FileCode className="w-4 h-4" />
+            <div className="p-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+              <FileCode className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">Quick Integration Snippets</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Copy pre-configured code with your generated key</p>
+              <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Ready-to-Use Code Snippets</h2>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Copy code ready for your backend stack</p>
             </div>
           </div>
 
           {/* Snippet Tabs */}
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl overflow-x-auto">
+          <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl overflow-x-auto">
             {[
               { id: "node", label: "Node.js" },
               { id: "nextjs", label: "Next.js / Jose" },
-              { id: "python", label: "Python (PyJWT)" },
+              { id: "python", label: "Python" },
               { id: "golang", label: "Go" },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveCodeTab(tab.id)}
-                className={`px-3 py-1 text-xs font-medium rounded-lg transition whitespace-nowrap ${
+                className={`px-3 py-1 text-xs rounded-lg transition whitespace-nowrap ${
                   activeCodeTab === tab.id
-                    ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs font-semibold"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-semibold shadow-xs"
+                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
                 }`}
               >
                 {tab.label}
@@ -464,22 +453,22 @@ func createToken(userID string) (string, error) {
 
         {/* Code Content Block */}
         <div className="relative">
-          <pre className="bg-slate-950 text-slate-100 rounded-xl p-4 text-xs font-mono overflow-x-auto leading-relaxed border border-slate-800 max-h-56">
+          <pre className="bg-zinc-950 text-zinc-200 rounded-xl p-4 text-xs font-mono overflow-x-auto leading-relaxed border border-zinc-800 max-h-56">
             <code>{codeSnippets[activeCodeTab]}</code>
           </pre>
 
           <button
             onClick={() => copyToClipboard(codeSnippets[activeCodeTab], "code", "Code snippet copied!")}
-            className="absolute top-2.5 right-2.5 flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs transition"
+            className="absolute top-2.5 right-2.5 flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs transition"
           >
             {copiedType === "code" ? (
               <>
                 <Check className="w-3 h-3 text-emerald-400" />
-                <span className="text-emerald-400 text-[11px]">Copied</span>
+                <span className="text-emerald-400 text-[11px] font-medium">Copied</span>
               </>
             ) : (
               <>
-                <Copy className="w-3 h-3" />
+                <Copy className="w-3 h-3 text-zinc-400" />
                 <span className="text-[11px]">Copy Snippet</span>
               </>
             )}

@@ -17,23 +17,24 @@
   }
 }
 
-/* Background patterns */
+/* Light Background Pattern */
 .bg-grid-light {
-  background-color: #f8fafc;
-  background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-color: #fcfcfd;
+  background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
+/* Dark Background Pattern */
 .bg-grid-dark {
-  background-color: #0b0f19;
-  background-image: radial-gradient(#1e293b 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-color: #09090b;
+  background-image: radial-gradient(#27272a 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
-/* Custom smooth scrollbar */
+/* Smooth custom scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
@@ -41,34 +42,18 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #d4d4d8;
   border-radius: 9999px;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #3f3f46;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #a1a1aa;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
-
-/* Pulse glow animations */
-@keyframes subtle-glow {
-  0%, 100% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.02);
-  }
-}
-
-.animate-subtle-glow {
-  animation: subtle-glow 4s ease-in-out infinite;
+  background: #52525b;
 }
