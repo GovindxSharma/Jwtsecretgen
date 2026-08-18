@@ -1,68 +1,62 @@
-
-````markdown
 # 🔐 JWT Secret Generator
 
-A secure, open-source tool to generate cryptographically strong JWT secrets with a beautiful, responsive UI — perfect for your `.env` files or JWT-based applications.
+A modern, fast, cryptographically secure tool to generate and test JWT secrets with a clean, light-first UI, multi-format encodings, and instant integration code snippets.
 
-👉 **Live Demo:** [https://jwtsecretgenenrator.onrender.com/](https://jwtsecretgenenrator.onrender.com/)
+👉 **Live Demo:** [https://govindxsharma.github.io/Jwtsecretgen/](https://govindxsharma.github.io/Jwtsecretgen/)
 
 ---
 
 ## ✨ Features
 
-- 🔑 Generate 256-bit, 512-bit, or 1024-bit secure secrets
-- 📋 One-click copy to clipboard
-- 💅 Beautiful dark UI with smooth gradients & transitions
-- 📱 Fully responsive on mobile and desktop
-- 🚀 No backend, 100% client-side and secure
+- 🔑 **Cryptographically Secure**: 100% in-browser generation using `window.crypto.getRandomValues()` (CSPRNG).
+- 🌓 **Light & Dark Themes**: Crisp modern light mode by default with seamless dark mode toggle and saved preferences.
+- 📐 **Multiple Algorithm Presets**:
+  - `HS256` (256-bit / 32 Bytes)
+  - `HS384` (384-bit / 48 Bytes)
+  - `HS512` (512-bit / 64 Bytes — Recommended)
+  - `1024-bit` (1024-bit / 128 Bytes)
+- 🔠 **Multiple Output Formats**:
+  - **Hexadecimal** (with lowercase / uppercase toggle)
+  - **Base64**
+  - **Base64URL** (RFC 7515 URL-safe)
+  - **Alphanumeric** (A-Z, a-z, 0-9)
+- 🛡️ **Interactive Secret Strength Tester**: Paste any existing key to analyze bit length, entropy level, and algorithm compatibility.
+- 📦 **Instant Integration Snippets**: Ready-to-copy code tabs for Node.js (`jsonwebtoken`), Next.js (`jose`), Python (`PyJWT`), and Go.
+- 📄 **One-Click Export**: Copy secret, copy `.env` format, or download a `.env` file directly.
+- 👁️ **Privacy Shield**: Mask/Reveal toggle (`••••••••`) to protect against shoulder-surfing.
+- ⌨️ **Keyboard Shortcut**: Press `G` or `Space` to regenerate a secret instantly.
+- 🚀 **Zero Telemetry / 100% Client-Side**: No backend, zero tracking, keys never leave your device.
 
 ---
 
 ## 🖥️ Tech Stack
 
-- ⚛️ **React + Vite**
-- 🎨 **Tailwind CSS**
-- 💡 **Crypto API** (`window.crypto.getRandomValues`)
-- 🧪 Hosted on **Render**
+- ⚛️ **React 19 + Vite 7**
+- 🎨 **Tailwind CSS 4**
+- 🔤 **Lucide React Icons**
+- 💡 **Web Crypto API**
 
 ---
 
-## 📦 Usage
+## 📦 Local Development
 
-1. Click **"Generate Secret"** to create a secure random string.
-2. Choose the key size: **256, 512, or 1024-bit**.
-3. Click **"Copy Secret"** to copy it to your clipboard.
-4. Paste it into your `.env` file or wherever needed:
+```bash
+# Clone the repository
+git clone https://github.com/GovindxSharma/Jwtsecretgen.git
 
-```env
-JWT_SECRET=your_generated_secret
-````
+# Navigate into directory
+cd Jwtsecretgen
 
----
+# Install dependencies
+npm install
 
-## 📸 Preview
-
-![Preview of JWT Secret Generator](https://jwtsecretgenenrator.onrender.com/jwt.png)
-
----
-
-## 📁 Project Structure
-
-```
-├── public/
-│   └── jwt.png              # Favicon
-├── src/
-│   ├── components/
-│   │   ├── Header.jsx
-│   │   ├── Generator.jsx
-│   │   └── Docs.jsx
-│   ├── App.jsx
-│   ├── main.jsx
-│   └── index.css
-├── index.html
-├── tailwind.config.js
-└── README.md
+# Start local dev server
+npm run dev
 ```
 
+---
 
+## 📄 License & Credits
 
+Crafted with ❤️ by [Govind Sharma](https://github.com/GovindxSharma).
+Open source and free for developers worldwide.
